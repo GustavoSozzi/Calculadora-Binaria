@@ -1,3 +1,5 @@
+import os
+
 from unicodedata import decimal
 
 
@@ -70,35 +72,88 @@ def convert_to_decimal(binary):
         decimal_value = int(inverted,2) + 1
         return -decimal_value
 
+def shift_esquerda(number, LSB):
+    MSB = number[0]
+    number = number[1:] + LSB
+    return number, MSB
+
+def add_division(A, M):
+    result = format(int(A, 2) + int(M,2), 'b')
+    return result[len(result)-len(A):]
+
+def DivisionAlgorithm(Q, M, tamRepresentacao):
+    A = '0' * tamRepresentacao
+
+    os.system('cls' if os.name == 'nt' else 'clear')
+    print(f'{"A": ^{tamRepresentacao}} {"Q": ^{tamRepresentacao}} {"M": ^{tamRepresentacao}}\n')
+    print(A, Q, M, ' Valores Iniciais\n')
+
+    for i in range(tamRepresentacao):
+        Q, MSB = shift_esquerda(Q, '0')
+        A, _ = shift_esquerda(A, MSB)
+
+        print(A, Q, M, ' Shift left A, Q            ─┐')
+
+        A = binarySubtraction(A, M)  # A <- A - M
+        print(A, Q, M, ' A <- A - M', f'                 ├── Ciclo {i+1}')
+
+        if A[0] == '1':
+            Q = Q[:-1] + '0'
+            A = binary_sum(A, M)  # Restore A
+            print(A, Q, M, '  Restore A, Set Q[0] = 0   ─┘')
+        else:
+            Q = Q[:-1] + '1'
+            print(A, Q, M, ' Set Q[0] = 1               ─┘')
+
+        print('')
+
+    return Q, A
+
+
 def main():
     op = 1
     total = 0
-    print('Entre com o tamanho da representacao do inteiro')
+    print('Entre com o tamanho da representacao do inteiro : 8 bits | 16 bits | 32 bits')
     tamRepresentacao = int(input())
 
-    while(op!=0):
-        print('Entre com o primeiro numero: ')
-        number_one = int(input())
-        print('Entre com o segundo numero: ')
-        number_two = int(input())
+    if tamRepresentacao == 8 or tamRepresentacao == 16 or tamRepresentacao == 32:
+        while (op != 0):
+            print('Entre com o primeiro numero: ')
+            number_one = int(input())
+            print('Entre com o segundo numero: ')
+            number_two = int(input())
 
-        number_one_binary = (converte_to_binary(number_one, tamRepresentacao))
-        number_two_binary = (converte_to_binary(number_two, tamRepresentacao))
+            number_one_binary = (converte_to_binary(number_one, tamRepresentacao))
+            number_two_binary = (converte_to_binary(number_two, tamRepresentacao))
 
-        print('Entre com a operação desejada: \n(+) SOMA | \n(-) SUBTRAÇÃO | \n(*) - MULTIPLICAÇÃO | \n (/) DIVISAO ')
-        operador = input()
+            print(
+                'Entre com a operação desejada: \n(+) SOMA | \n(-) SUBTRAÇÃO | \n(*) - MULTIPLICAÇÃO | \n(/) DIVISAO ')
+            operador = input()
 
-        if(operador == '+'):
-            total = binary_sum(number_one_binary, number_two_binary)
-            result = convert_to_decimal(total)
-            print(f'Resultado da soma de: {number_one_binary} : ({number_one})  + , {number_two_binary} : ({number_two})  = ', result)
+            if (operador == '+'):
+                total = binary_sum(number_one_binary, number_two_binary)
+                result = convert_to_decimal(total)
+                print(
+                    f'Resultado da soma de: {number_one_binary} : ({number_one})  + , {number_two_binary} : ({number_two})  = ',
+                    total, result)
 
-        elif(operador == '-'):
-            total = binarySubtraction(number_one_binary, number_two_binary)
-            result = convert_to_decimal(total)
-            print(f'Resultado da subtração de: {number_one_binary} : ({number_one})  + , {number_two_binary} : ({number_two})  = ',total ,result)
+            elif (operador == '-'):
+                total = binarySubtraction(number_one_binary, number_two_binary)
+                result = convert_to_decimal(total)
+                print(
+                    f'Resultado da subtração de: {number_one_binary} : ({number_one})  + , {number_two_binary} : ({number_two})  = {total} : {result}')
+            elif (operador == '/'):
+                Quociente, Resto_A = DivisionAlgorithm(number_one_binary, number_two_binary, tamRepresentacao)
+                result = convert_to_decimal(Quociente)
+                print(f'Resultado da divisão de : {number_one_binary} : ({number_one}) + {number_two_binary} : ({number_two}) = {result}')
+                Decimal_A = convert_to_decimal(Resto_A)
+                print(f'Quociente : {Quociente} e Resto de A: {Resto_A} : {Decimal_A}')
 
-        print('Continuar com a operação: 0 - Não | 1 - Sim')
-        op = int(input())
+            print('Continuar com a operação: 0 - Não | 1 - Sim')
+            op = int(input())
+    else:
+        print('O tamanho da Representação deve ser de 8, 16 ou 32 bits')
+
+
 
 main()
